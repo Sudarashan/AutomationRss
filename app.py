@@ -229,9 +229,9 @@ def create_post():
                 print("img_url",image_url)
                 link = "https://youtube.com/playlist?list=PLacDrP-7Ys6IsnPRN0ToTfjH8gQ4s6mL9&si=shb65ODGWXhcG1wq"
                 print("link----------------------------", link)
-                if image_url == None:
-                    print("here44444")
-                    image_url = "https://youtube.com/playlist?list=PLacDrP-7Ys6IsnPRN0ToTfjH8gQ4s6mL9&si=shb65ODGWXhcG1wq"
+                #if image_url == None:
+                #    print("here44444")
+                #    image_url = "https://youtube.com/playlist?list=PLacDrP-7Ys6IsnPRN0ToTfjH8gQ4s6mL9&si=shb65ODGWXhcG1wq"
                 
                 
                 transformed = agents.twitter_transform(title, description,link)

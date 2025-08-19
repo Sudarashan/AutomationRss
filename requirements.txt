@@ -1,0 +1,11 @@
+flask
+apscheduler
+requests
+tweepy
+feedparser
+langchain_google_genai
+langchain_core
+flask-session
+langchain
+python-dotenv
+gunicorn

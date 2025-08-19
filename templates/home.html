@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Home - Social Media Scheduler</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* Loader Styles */
+        #ftco-loader {
+            align-items: center;
+            background-color: #ffffff;
+            display: flex;
+            height: 100vh;
+            justify-content: center;
+            left: 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 999999;
+        }
+
+        .loader {
+            position: relative;
+        }
+
+        .loader .loader-box {
+            display: flex;
+            justify-self: center;
+            align-items: center;
+            margin: auto;
+            transition: all 0.9s ease-in-out;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #000000;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Rest of your CSS remains unchanged */
+        .platform-status {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-top: 5px solid #0A66C2;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all .3s ease;
+        }
+
+        .platform-status:hover {
+            box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+        }
+
+        .btn-custom {
+            min-width: 180px;
+        }
+
+        .btn-connect {
+            background-color: #0A66C2;
+            color: #fff;
+        }
+
+        .btn-connect:hover {
+            background-color: #0A66C2;
+        }
+
+        .icon {
+            border-bottom: 1px solid #f2f2f2;
+            width: 100%;
+            padding: 30px 0px;
+        }
+
+        .icon i {
+            font-size: 50px;
+            color: #0A66C2;
+        }
+
+        .linkedin {
+            margin: 20px auto;
+            font-size: 20px;
+            color: #333333;
+            font-weight: 600;
+        }
+
+        .submit_btn {
+            background-color: green;
+            color: white;
+            padding: 6px 16px 7px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: background-color 0.3s ease;
+            text-decoration: none !important;
+        }
+
+        .submit_btn:hover {
+            background-color: transparent;
+            color: green;
+            border: 1px solid green;
+        }
+
+        .connected {
+            color: green !important;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+            padding: 6px 16px 9px;
+            border-radius: 25px;
+            text-decoration: none;
+            margin: 10px 0px;
+        }
+
+        .connected_btn {
+            background-color: green;
+            color: #fff;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+            padding: 6px 16px 9px;
+            border-radius: 25px;
+            text-decoration: none;
+            margin: 10px 0px;
+        }
+
+        .connected_btn:hover {
+            background-color: transparent;
+            color: green;
+            border: 1px solid green;
+        }
+
+        .not-connected {
+            color: #dc3545 !important;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+            padding: 6px 16px 9px;
+            border-radius: 25px;
+            text-decoration: none;
+            margin: 10px 0px;
+        }
+
+        .disconnected {
+            background-color: #dc3545;
+            color: #ffffff;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+            padding: 6px 16px 9px;
+            border-radius: 25px;
+            text-decoration: none;
+            margin: 10px 0px;
+        }
+
+        .disconnected:hover {
+            background-color: transparent;
+            color: #dc3545;
+            border: 1px solid #dc3545;
+        }
+
+        .social_media {
+            padding: 80px 0px;
+        }
+
+        .back_btn {
+            background-color: #f8f9fa;
+            color: green;
+            padding: 6px 16px 9px;
+            border: 1px solid green;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            margin: 10px 0px;
+        }
+
+        .back_btn:hover {
+            background-color: green;
+            color: #fff;
+            border: 1px solid #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loader -->
+    <div id="ftco-loader">
+        <div class="loader">
+            <div class="loader-box">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="content" style="display: none;">
+        <section class="social_media">
+            <div class="container">
+                <h1 class="text-center  mb-5">Social Media Scheduler</h1>
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="platform-status">
+                            <div class="icon">
+                                <i class="fab fa-linkedin"></i>
+                            </div>
+                            <h2 class="linkedin">LinkedIn</h2>
+                            <div style="display: flex;align-items: center;">
+                                {% if connected_platforms.linkedin %}
+                                <p class="connected ">Connected ✓ </p>
+                                <a href="{{ url_for('disconnect', platform='linkedin') }}" class="ms-2 btn disconnected ">Disconnect</a>
+                                {% else %}
+                                <p class=" not-connected">Not Connected</p>
+                                <a href="{{ url_for('linkedin_auth') }}" class="ms-2 btn submit_btn">Connect</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6">
+                        <div class="platform-status">
+                            <div class="icon">
+                                <i class="fab fa-x-twitter text-dark"></i>
+                            </div>
+                            <h2 class="linkedin">Twitter</h2>
+                            <div style="display: flex;align-items: center;">
+                                {% if connected_platforms.twitter %}
+                                <p class="connected ">Connected ✓ </p>
+                                <a href="{{ url_for('disconnect', platform='twitter') }}" class="ms-2 btn disconnected ">Disconnect</a>
+                                {% else %}
+                                <p class=" not-connected">Not Connected</p>
+                                <a href="{{ url_for('twitter_auth') }}" class="ms-2 btn submit_btn">Connect</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    {% if not (connected_platforms.linkedin and connected_platforms.twitter) %}
+                    <a href="{{ url_for('connect_all') }}" class="btn connected_btn me-2">Connect All Platforms</a>
+                    {% endif %}
+
+                    {% if connected_platforms.linkedin or connected_platforms.twitter %}
+                    <a href="{{ url_for('create_post') }}" class="btn back_btn ">Go to Post</a>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Loader Script -->
+    <script>
+        window.addEventListener("load", () => {
+            const loader = document.getElementById("ftco-loader");
+            const content = document.getElementById("content");
+            setTimeout(() => {
+                loader.style.display = "none";
+                content.style.display = "block";
+            }, 1000);
+        });
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

@@ -12,40 +12,40 @@ LINKEDIN_CLIENT_SECRET = os.getenv("LINKEDIN_CLIENT_SECRET")
 TWITTER_CLIENT_ID = os.getenv("TWITTER_CLIENT_ID")
 TWITTER_CLIENT_SECRET = os.getenv("TWITTER_CLIENT_SECRET")
 
-# def extract_image_url(entry):
-#     """Extract an image URL from an RSS feed entry."""
-#     for enclosure in entry.get('enclosures', []):
-#         if enclosure.get('type', '').startswith('image/'):
-#             return enclosure.get('url')
-#     for media in entry.get('media_content', []):
-#         if media.get('type', '').startswith('image/'):
-#             return media.get('url')
-#     for thumbnail in entry.get('media_thumbnail', []):
-#         if thumbnail.get('url'):
-#             return thumbnail.get('url')
-#     if 'image' in entry:
-#         image = entry['image']
-#         if isinstance(image, dict) and 'url' in image:
-#             return image['url']
-#         elif isinstance(image, list):
-#             for img in image:
-#                 if 'url' in img:
-#                     return img['url']
-#     if 'itunes_image' in entry:
-#         return entry['itunes_image'].get('href')
-#     for field in ['description', 'summary', 'content']:
-#         if field in entry:
-#             content = entry[field]
-#             if isinstance(content, list):
-#                 content = content[0].get('value', '')
-#             elif isinstance(content, dict):
-#                 content = content.get('value', '')
-#             else:
-#                 content = str(content)
-#             match = re.search(r'<img[^>]+src=["\'](.*?)["\']', content, re.I)
-#             if match:
-#                 return match.group(1)
-#     return None
+def extract_image_url(entry):
+    """Extract an image URL from an RSS feed entry."""
+    for enclosure in entry.get('enclosures', []):
+        if enclosure.get('type', '').startswith('image/'):
+            return enclosure.get('url')
+    for media in entry.get('media_content', []):
+        if media.get('type', '').startswith('image/'):
+            return media.get('url')
+    for thumbnail in entry.get('media_thumbnail', []):
+        if thumbnail.get('url'):
+            return thumbnail.get('url')
+    if 'image' in entry:
+        image = entry['image']
+        if isinstance(image, dict) and 'url' in image:
+            return image['url']
+        elif isinstance(image, list):
+            for img in image:
+                if 'url' in img:
+                    return img['url']
+    if 'itunes_image' in entry:
+        return entry['itunes_image'].get('href')
+    for field in ['description', 'summary', 'content']:
+        if field in entry:
+            content = entry[field]
+            if isinstance(content, list):
+                content = content[0].get('value', '')
+            elif isinstance(content, dict):
+                content = content.get('value', '')
+            else:
+                content = str(content)
+            match = re.search(r'<img[^>]+src=["\'](.*?)["\']', content, re.I)
+            if match:
+                return match.group(1)
+    return None
 
 def post_to_linkedin(post):
     """Post content to LinkedIn with optional image."""

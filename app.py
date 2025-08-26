@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import tweepy
 from agents import SocialMediaAgents  # Assuming this is your agents.py file
 import feedparser
-from helpers import post_to_linkedin, post_to_twitter
+from helpers import post_to_linkedin, post_to_twitter, extract_image_url
 import random
 import uuid
 from dotenv import load_dotenv
@@ -199,7 +199,8 @@ def create_post():
                 description = entry.get('description', entry.get('summary', ''))
                 print("desc",description)
                 print(type(description))
-                image_url = None
+                # image_url = None
+                image_url = extract_image_url(entry)
                 print("img_url",image_url)
                 link = "https://youtube.com/playlist?list=PLacDrP-7Ys6IsnPRN0ToTfjH8gQ4s6mL9&si=shb65ODGWXhcG1wq"
                 # if image_url == None:

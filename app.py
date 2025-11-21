@@ -292,7 +292,7 @@ def scheduled_posts():
 
 @app.route('/delete_all_posts', methods=['POST'])
 def delete_all_posts():
-    global posts                   # Clear all saved tokens/accounts
+    global posts                   # Clear all saved tokens/account
     posts.clear()
     scheduler.remove_all_jobs()        # Stop all scheduled jobs
     return redirect(url_for('scheduled_posts'))

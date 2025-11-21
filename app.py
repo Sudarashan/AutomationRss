@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import tweepy
 from agents import SocialMediaAgents  # Assuming this is your agents.py file
 import feedparser
-from helpers import post_to_linkedin, post_to_twitter, extract_image_url
+from helpers import post_to_linkedin, post_to_twitter, extract_image_url, extract_link_from_rss_entry
 import random
 import uuid
 from dotenv import load_dotenv
@@ -63,7 +63,6 @@ def linkedin_auth():
         f'scope={scope}&state=randomstring'
     )
 
-    print("auth------------",auth_url)
     return redirect(auth_url)
 
 @app.route('/linkedin/callback')
@@ -72,7 +71,6 @@ def linkedin_callback():
     if not code:
         return "Error: No authorization code provided"
     
-    print("code11111111",code)
     token_url = 'https://www.linkedin.com/oauth/v2/accessToken'
     data = {
         'grant_type': 'authorization_code',
@@ -124,8 +122,6 @@ def twitter_callback():
         auth.get_access_token(verifier)
         session['twitter_access_token'] = auth.access_token
         session['twitter_access_token_secret'] = auth.access_token_secret
-
-        print("twitter_session = 1",session.get('twitter_access_token'))
         auth.set_access_token(auth.access_token, auth.access_token_secret)
         api = tweepy.API(auth)
 
@@ -174,7 +170,6 @@ def create_post():
         for rss_url in rss_urls:
             response = requests.get(rss_url, verify=True)
             feed = feedparser.parse(response.content)
-            print(feed, "------------------------------------")
             all_entries.extend(feed.entries)
         selected_entries = random.sample(all_entries, min(total_posts, len(all_entries)))
 
@@ -197,44 +192,33 @@ def create_post():
             for entry in selected_entries:
                 title = entry.title
                 description = entry.get('description', entry.get('summary', ''))
-                print("desc",description)
-                print(type(description))
                 # image_url = None
                 image_url = extract_image_url(entry)
-                print("img_url",image_url)
-                link = "https://youtube.com/playlist?list=PLacDrP-7Ys6IsnPRN0ToTfjH8gQ4s6mL9&si=shb65ODGWXhcG1wq"
-                # if image_url == None:
-                #     print("here44444")
-                #     image_url = None
-                transformed = agents.linkedin_transform(title, description,link)
+                link = extract_link_from_rss_entry(entry)
+                if not link:
+                    link = "https://youtube.com/playlist?list=PLacDrP-7Ys6IsnPRN0ToTfjH8gQ4s6mL9&si=shb65ODGWXhcG1wq"
+
+                transformed = agents.linkedin_transform(title, description)
                 
                 text = f"{transformed['new_title']} {transformed['new_description']}"
                 generated_posts['linkedin'].append({
                     'text': text,
                     'image_url': image_url,
+                    'link': link,
                     'platform': 'linkedin',
                     'access_token': session['linkedin_access_token'],
                     'linkedin_id': session['linkedin_id'],
                     'status': 'pending'
                 })
         if session.get('twitter_access_token'):
-            print("twitter_session = 2",session.get('twitter_access_token'))
             for entry in selected_entries:
                 title = entry.title
-                print("title__________________________________________________")
                 description = entry.get('description', entry.get('summary', ''))
-                print("description---------------------------------------")
                 image_url = None
-                print("desc",description)
-                print(type(description))
-                print("img_url",image_url)
-                link = "https://youtube.com/playlist?list=PLacDrP-7Ys6IsnPRN0ToTfjH8gQ4s6mL9&si=shb65ODGWXhcG1wq"
-                print("link----------------------------", link)
-                #if image_url == None:
-                #    print("here44444")
-                #    image_url = "https://youtube.com/playlist?list=PLacDrP-7Ys6IsnPRN0ToTfjH8gQ4s6mL9&si=shb65ODGWXhcG1wq"
-                
-                
+                link = extract_link_from_rss_entry(entry)
+                if not link:
+                    link = "https://youtube.com/playlist?list=PLacDrP-7Ys6IsnPRN0ToTfjH8gQ4s6mL9&si=shb65ODGWXhcG1wq"
+       
                 transformed = agents.twitter_transform(title, description,link)
                 text = f"{transformed['new_title']} {transformed['new_description']}"
                 
@@ -266,7 +250,6 @@ def review_posts(post_id):
     now = datetime.now()
 
     current_time = now.strftime("%H:%M:%S")
-    print("Current Time =", current_time)
    
     post_data = temp_posts[post_id]
     all_posts = []
@@ -284,11 +267,11 @@ def review_posts(post_id):
                 post['scheduled_time'] = scheduled_time
                 posts.append(post)
                 if platform == 'linkedin':
-                    scheduler.add_job(post_to_linkedin, 'date', run_date=scheduled_time, args=[post])
+                    job = scheduler.add_job(post_to_linkedin, 'date', run_date=scheduled_time, args=[post])
+                    post["job_id"] = job.id
                 elif platform == 'twitter':
-                    
-                    print("pooooooooossssssssssssttttttt",post)
-                    scheduler.add_job(post_to_twitter, 'date', run_date=scheduled_time, args=[post])
+                    job = scheduler.add_job(post_to_twitter, 'date', run_date=scheduled_time, args=[post])
+                    post["job_id"] = job.id
                     now = datetime.now()
                     current_time = now.strftime("%H:%M:%S")
                     print("end Time =", current_time)
@@ -305,6 +288,33 @@ def scheduled_posts():
     linkedin_posts = [p for p in posts if p['platform'] == 'linkedin' and p['status'] == 'pending']
     twitter_posts = [p for p in posts if p['platform'] == 'twitter' and p['status'] == 'pending']
     return render_template('scheduled.html', linkedin_posts=linkedin_posts, twitter_posts=twitter_posts)
+
+
+@app.route('/delete_all_posts', methods=['POST'])
+def delete_all_posts():
+    global posts                   # Clear all saved tokens/accounts
+    posts.clear()
+    scheduler.remove_all_jobs()        # Stop all scheduled jobs
+    return redirect(url_for('scheduled_posts'))
+
+
+@app.route('/delete_post/<int:post_index>', methods=['POST'])
+def delete_post(post_index):
+    global posts
+    
+    if 0 <= post_index < len(posts):
+        # Remove job from scheduler also
+        job_id = posts[post_index].get("job_id")
+        if job_id:
+            try:
+                scheduler.remove_job(job_id)
+            except:
+                pass
+        
+        posts.pop(post_index)
+
+    return redirect(url_for('scheduled_posts'))
+
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))  # Get the port from Render

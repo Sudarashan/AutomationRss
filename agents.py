@@ -6,13 +6,13 @@ class SocialMediaAgents:
     PLATFORM_LIMITS = {
         "twitter": {"chars": 280, "words": None},
         "instagram": {"chars": None, "words": 400},
-        "linkedin": {"chars": None, "words": 600},
+        "linkedin": {"chars": None, "words": 500},
         "facebook": {"chars": None, "words": 1000}
     }
 
     def __init__(self, api_key: str):
         """Initialize the agent with a Google API key."""
-        self.llm = GoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=api_key)
+        self.llm = GoogleGenerativeAI(model="gemini-2.5-flash", google_api_key=api_key)
 
     def _create_chain(self, template: str) -> LLMChain:
         """Create an LLM chain with the given prompt template."""
@@ -112,18 +112,16 @@ class SocialMediaAgents:
         result['new_description'] = self._enforce_limits(result['new_description'], "instagram")
         return result
 
-    def linkedin_transform(self, title: str, description: str,link:str) -> dict:
+    def linkedin_transform(self, title: str, description: str) -> dict:
         """Transform content for Linkedin with a clickable link and within 550 words."""
         template = """Transform this into a LinkedIn post (550 words max):
         - Professional title
         - Detailed description with business insights
         - 2-3 relevant hashtags
         - Professional tone
-        - End with this line exactly: Listen to full podcast: {link}
         - Don't change link format and words.
-        - Ensure the ENTIRE result is no more than 550 words TOTAL (including the link line)
-        - if character more than 550 words manage limit and exclude description character
-        - Don't short {link} i want full link
+        - Ensure the ENTIRE result is no more than 520 words TOTAL (including the link line)
+        - if character more than 520 words manage limit and exclude description character
         
         Format output EXACTLY like this:
         New Title: [transformed title]
@@ -135,7 +133,7 @@ class SocialMediaAgents:
         Description: {description}
         """
         chain = self._create_chain(template)
-        response = chain.invoke({"title": title, "description": description,"link": link})
+        response = chain.invoke({"title": title, "description": description})
         parts = response['text'].split('---')
         result = {
             "new_title": parts[0].replace('New Title:', '').strip(),

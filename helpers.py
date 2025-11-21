@@ -47,6 +47,48 @@ def extract_image_url(entry):
                 return match.group(1)
     return None
 
+
+def extract_link_from_rss_entry(entry):
+    """Extract a video or article link from an RSS/Atom feed entry."""
+
+    # 1. Standard link tag (most RSS feeds)
+    if 'link' in entry:
+        link = entry.get('link')
+        if isinstance(link, list):
+            for l in link:
+                if isinstance(l, dict) and l.get('rel') == 'alternate' and 'href' in l:
+                    return l['href']
+                if isinstance(l, str):
+                    return l
+        elif isinstance(link, dict):
+            if link.get('rel') == 'alternate' and 'href' in link:
+                return link['href']
+        elif isinstance(link, str):
+            return link
+
+    # 2. YouTube <media:content> URL (the one you want)
+    for media in entry.get('media_content', []):
+        url = media.get('url')
+        if url:
+            return url
+
+    # 3. YouTube video ID
+    if 'yt_videoid' in entry:
+        return f"https://www.youtube.com/watch?v={entry['yt_videoid']}"
+
+    if 'yt:videoId' in entry:
+        return f"https://www.youtube.com/watch?v={entry['yt:videoId']}"
+
+    # 4. Look inside entry['id'] for yt:video:VIDEOID
+    if 'id' in entry and isinstance(entry['id'], str):
+        match = re.search(r'yt:video:([A-Za-z0-9_-]+)', entry['id'])
+        if match:
+            video_id = match.group(1)
+            return f"https://www.youtube.com/watch?v={video_id}"
+
+    return None
+
+
 def post_to_linkedin(post):
     """Post content to LinkedIn with optional image."""
     if post['status'] not in ['pending', 'posting']:
@@ -57,6 +99,7 @@ def post_to_linkedin(post):
     print("linkedin_access_token",access_token)
     linkedin_id = post['linkedin_id']
     image_url = post.get('image_url')
+    link = post.get('link')
     headers = {
         'Authorization': f'Bearer {access_token}',
         'Content-Type': 'application/json',
@@ -80,41 +123,22 @@ def post_to_linkedin(post):
                 upload_data = register_response.json()['value']
                 upload_url = upload_data['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']['uploadUrl']
                 asset = upload_data['asset']
-                print("uploaaaaaaaaadddddddddddd",asset)
                 upload_headers = {'Authorization': f'Bearer {access_token}'}
                 upload_response = requests.put(upload_url, headers=upload_headers, data=image_content)
                 if upload_response.status_code == 201:
                     api_url = 'https://api.linkedin.com/v2/ugcPosts'
                     post_body = {
-'author': f'urn:li:person:{linkedin_id}',
-'lifecycleState': 'PUBLISHED',
-'specificContent': {
-'com.linkedin.ugc.ShareContent': {
-'shareCommentary': {
-'text': f"{post['text']}"
-},
-'shareMediaCategory': 'ARTICLE',
-'media': [
-{
-'status': 'READY',
-'description': {
-'text': 'EYE ON AI'
-},
-'originalUrl': 'https://youtube.com/playlist?list=PLacDrP-7Ys6IsnPRN0ToTfjH8gQ4s6mL9',
-'title': {
-'text': 'EYE ON AI'
-}
-}
-]
-}
-},
-'visibility': {
-'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC'
-}
-}
+                'author': f'urn:li:person:{linkedin_id}',
+                'lifecycleState': 'PUBLISHED',
+                'specificContent': {
+                    'com.linkedin.ugc.ShareContent': {
+                        'shareCommentary': {'text': post['text']}
+                    }
+                },
+                'visibility': {'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC'}
+            }
                     response = requests.post(api_url, headers=headers, json=post_body)
                     post['status'] = 'posted' if response.status_code == 201 else 'failed'
-                    print(f"LinkedIn post attempt: {response.status_code} - {response.text}")
                 else:
                     print(f"Image upload failed: {upload_response.status_code}")
             else:
@@ -129,7 +153,14 @@ def post_to_linkedin(post):
                 'specificContent': {
                     'com.linkedin.ugc.ShareContent': {
                         'shareCommentary': {'text': post['text']},
-                        'shareMediaCategory': 'NONE'
+                        "shareMediaCategory": "ARTICLE",
+                        "media": [
+                            {
+                            "status": "READY",
+                            "originalUrl": link
+                            }
+                        ]
+
                     }
                 },
                 'visibility': {'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC'}
@@ -164,7 +195,6 @@ def post_to_twitter(post):
         access_token=post['access_token'],
         access_token_secret=post['access_token_secret']
     )
-    print("access_token_secret",client.access_token_secret)
     image_url = post.get('image_url')
     if image_url:
         response = requests.get(image_url, timeout=10)
@@ -178,13 +208,10 @@ def post_to_twitter(post):
                 media = api.media_upload(filename='image', file=image_content)
                 client.create_tweet(text=post['text'], media_ids=[media.media_id])
                 post['status'] = 'posted'
-                print("Twitter post with image successful")
             except tweepy.TweepyException as e:
-                print(f"Twitter image post error: {e}")
                 try:
                     client.create_tweet(text=post['text'])
                     post['status'] = 'posted'
-                    print("Twitter text-only post successful")
                 except tweepy.TweepyException as e:
                     post['status'] = 'failed'
                     print(f"Twitter text-only error: {e}")

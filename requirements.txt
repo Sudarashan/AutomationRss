@@ -4,9 +4,10 @@ requests
 tweepy
 feedparser
 langchain_google_genai
-langchain_core
+langchain-core==0.0.12
 flask-session
 langchain==0.0.350
 python-dotenv
 gunicorn
-langchain-community
+langchain-community==0.0.20
+langchain-experimental==0.0.20

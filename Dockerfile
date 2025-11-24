@@ -7,6 +7,9 @@ WORKDIR /app
 # Copy requirements first (for better caching)
 COPY requirements.txt .
 
+#Uninstalling requirements.txt first
+RUN pip uninstall -y -r requirements.txt || true
+
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -18,3 +21,4 @@ EXPOSE 8080
 
 # Run Flask app
 CMD ["python", "app.py"]
+

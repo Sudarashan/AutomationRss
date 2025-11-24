@@ -6,7 +6,7 @@ feedparser
 langchain_google_genai
 langchain_core
 flask-session
-langchain
+langchain==0.0.350
 python-dotenv
 gunicorn
 langchain-community

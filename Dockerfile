@@ -8,7 +8,7 @@ WORKDIR /app
 COPY requirements.txt .
 
 #Uninstalling requirements.txt first
-RUN pip uninstall -y -r requirements.txt || true
+RUN pip uninstall -y langchain langchain-core langchain-community langchain-experimental langchain-openai || true
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
@@ -21,4 +21,5 @@ EXPOSE 8080
 
 # Run Flask app
 CMD ["python", "app.py"]
+
 

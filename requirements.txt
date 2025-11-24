@@ -43,9 +43,6 @@ langchain-community==0.0.8
 langchain-google-genai==0.0.8
 # --------------------------------
 
-langgraph==0.0.0  # removed (not needed, deprecated)
-langsmith==0.0.87
-
 MarkupSafe==3.0.3
 marshmallow==3.26.1
 msgspec==0.20.0

@@ -4,9 +4,6 @@ FROM python:3.12-slim
 # Set working directory
 WORKDIR /app
 
-#Uninstalling requirements.txt first
-RUN rm -rf /usr/local/lib/python3.12/site-packages/*
-
 # Copy requirements first (for better caching)
 COPY requirements.txt .
 
@@ -21,6 +18,7 @@ EXPOSE 8080
 
 # Run Flask app
 CMD ["python", "app.py"]
+
 
 
 
